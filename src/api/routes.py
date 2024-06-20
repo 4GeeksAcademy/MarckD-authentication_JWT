@@ -62,9 +62,9 @@ def login():
     user = User.query.filter_by(email = email).first()
 
     if user is None  or user.password != password:
-        return jsonify({"msg": "Bad email or password"})
+        return jsonify({"msg": "Bad email or password"}), 400
     
-    access_token = create_access_token(identity = user.id)
+    access_token = create_access_token(identity = user.email)
 
     response_body = ({
         "access_token": access_token,

@@ -2,25 +2,79 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			demo: [],
+			token: null,
+			isAuthenticated: false
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
+			logout: () => {
+				const store = getStore();
+				setStore({
+					isAuthenticated: false
+				})
+
+			},
+			Signup: async (username, email, password) => {
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + "/api/signup", {
+						method:'POST',
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							"username": username,
+							"email": email,
+							"password": password
+						})
+					})
+					
+					const data = await resp.json();
+					
+					if (resp.ok) {
+						return { success: true }
+					} else {
+						return { success: false, message: data.msg };
+					}
+				} catch (error) {
+					console.error("No se pudo realizar el fetch desde flux", error)
+				}
+			},
+			login: async(email,password) => {
+				console.log("esto recibe", password, email)
+				const store = getStore()
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + "/api/login", {
+						method:'POST',
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							"email": email,
+							"password":password
+						})
+					})
+
+					const data = await resp.json()
+
+					if(resp.ok) {
+						setStore ({
+							...store,
+							token: data.access_token,
+							isAuthenticated: true
+						})
+						localStorage.setItem("token", data.access_token)
+						return true;
+					} else {
+						return false;
+					}
+				}catch (error) {
+					console.error("There was an error logging in:", error)
+					return false;
+				}
+			},
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
-
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
